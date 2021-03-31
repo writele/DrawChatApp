@@ -1,9 +1,15 @@
 ﻿@page "/"
 @inject NavigationManager NavigationManager
+@inject Microsoft.JSInterop.IJSRuntime js;
 @implements IAsyncDisposable
 
-<div class="form-group">
-    <BECanvas Width="300" Height="400" @ref="_canvasReference"></BECanvas>
+<div class="form-group" @ref="_canvasContainer">
+    <canvas @ref="_canvasReference" width="400px" height="400px"
+            style="border: 1px solid red"
+            @onmousemove="MouseMoveCanvasAsync" 
+            @onmouseup="MouseUpCanvas" 
+            @onmousedown="MouseDownCanvas">
+    </canvas>
 </div>
 
 <div class="form-group">
