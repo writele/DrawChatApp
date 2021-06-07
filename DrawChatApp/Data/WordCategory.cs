@@ -7,9 +7,15 @@ namespace DrawChatApp.Data
 {
     public enum WordCategory
     {
+        // Generic objects
         Thing = 1,
+        // Specific locations (countries, states, tourist spots, ect.)
         Place = 2,
-        Activity = 3,
-        Concept = 4
+        // Fictional characters
+        Character = 3,
+        // Actions and hobbies
+        Activity = 4,
+        // Abstract concepts
+        Concept = 5
     }
 }

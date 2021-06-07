@@ -14,10 +14,18 @@ namespace DrawChatApp.Pages
 {
     public partial class Index : ComponentBase
     {
+        #region CHAT fields
         private HubConnection hubConnection;
         private List<string> messages = new List<string>();
         private string userInput;
         private string messageInput;
+
+        public bool IsConnected =>
+            hubConnection.State == HubConnectionState.Connected;
+        #endregion
+
+        #region WHITEBOARD Fields
+        private HubConnection whiteboardConnection;
 
         protected ElementReference _canvasContainer;
         protected ElementReference _canvasReference;
@@ -32,26 +40,29 @@ namespace DrawChatApp.Pages
         private double mousey;
         private string clr = "black";
 
+        //private MouseEventArgs mouseDownArgs;
+        //private MouseEventArgs mouseUpArgs;
+        //private MouseEventArgs mouseMoveArgs;
+        double prev_x;
+        double prev_y;
+        double x;
+        double y;
+
         private class Position
         {
             public double Left { get; set; }
             public double Top { get; set; }
         }
 
+        public bool IsWhiteboardConnected =>
+            whiteboardConnection.State == HubConnectionState.Connected;
+        #endregion
+
+        #region INITIALIZATION
         protected override async Task OnInitializedAsync()
         {
-            hubConnection = new HubConnectionBuilder()
-                .WithUrl(NavigationManager.ToAbsoluteUri("/chathub"))
-                .Build();
-
-            hubConnection.On<string, string>("ReceiveMessage", (user, message) =>
-            {
-                var encodedMsg = $"{user}: {message}";
-                messages.Add(encodedMsg);
-                StateHasChanged();
-            });
-
-            await hubConnection.StartAsync();
+            await InitializeChatHub();
+            await InitializeWhiteboardHub();
         }
 
         protected override async Task OnAfterRenderAsync(bool firstRender)
@@ -65,12 +76,70 @@ namespace DrawChatApp.Pages
             }
         }
 
+        protected async Task InitializeChatHub()
+        {
+            // Connect to ChatHub
+            hubConnection = new HubConnectionBuilder()
+                .WithUrl(NavigationManager.ToAbsoluteUri("/chathub"))
+                .Build();
+
+            // Set up ReceiveMessage function. Send() transfers info to ChatHub, which then calls this function
+            hubConnection.On<string, string>("ReceiveMessage", (user, message) =>
+            {
+                var encodedMsg = $"{user}: {message}";
+                messages.Add(encodedMsg);
+                StateHasChanged();
+            });
+
+            await hubConnection.StartAsync();
+        }
+
+        protected async Task InitializeWhiteboardHub()
+        {
+            // Connect to ChatHub
+            whiteboardConnection = new HubConnectionBuilder()
+                .WithUrl(NavigationManager.ToAbsoluteUri("/whiteboardhub"))
+                .Build();
+
+            // Set up app to receive response from Whiteboard Hub
+            //whiteboardConnection.On<MouseEventArgs>("ReceiveMouseDownArgs", mouseDownArgs => 
+            //{
+            //    MouseDownCanvas(mouseDownArgs);
+            //});
+
+            //whiteboardConnection.On<MouseEventArgs>("ReceiveMouseUpArgs", mouseUpArgs =>
+            //{
+            //    MouseUpCanvas(mouseUpArgs);
+            //});
+
+            //whiteboardConnection.On<MouseEventArgs>("ReceiveMouseMoveArgs", mouseMoveArgs =>
+            //{
+            //    MouseMoveCanvasAsync(mouseMoveArgs);
+            //});
+
+            whiteboardConnection.On<double, double, double, double, string>("ReceiveDrawCanvasArgs", (prev_x, prev_y, x, y, clr) =>
+            {
+                DrawCanvasAsync(prev_x, prev_y, x, y, clr);
+            });
+
+            await whiteboardConnection.StartAsync();
+        }
+        #endregion
+
+        #region CHAT (Send to clients)
         Task Send() =>
             hubConnection.SendAsync("SendMessage", userInput, messageInput);
+        #endregion
 
-        public bool IsConnected =>
-            hubConnection.State == HubConnectionState.Connected;
+        #region WHITEBOARD (Send to clients)
+        //Task OnMouseDown() =>
+        //    whiteboardConnection.SendAsync("SendMouseDownEvent", mouseDownArgs);
 
+        //Task OnMouseUp() =>
+        //    whiteboardConnection.SendAsync("SendMouseUpEvent", mouseUpArgs);
+        #endregion
+
+        #region WHITEBOARD Events
         private void MouseDownCanvas(MouseEventArgs e)
         {
             render_required = false;
@@ -94,7 +163,8 @@ namespace DrawChatApp.Pages
             }
             mousex = e.ClientX - canvasx;
             mousey = e.ClientY - canvasy;
-            await DrawCanvasAsync(mousex, mousey, last_mousex, last_mousey, clr);
+            //await DrawCanvasAsync(mousex, mousey, last_mousex, last_mousey, clr);
+            await whiteboardConnection.SendAsync("SendDrawCanvasArgs", mousex, mousey, last_mousex, last_mousey, clr);
             last_mousex = mousex;
             last_mousey = mousey;
         }
@@ -108,8 +178,9 @@ namespace DrawChatApp.Pages
                 await ctx2.LineToAsync(x, y);
                 await ctx2.StrokeAsync();
             }
-
         }
+        #endregion
+
         private bool render_required = true;
         protected override bool ShouldRender()
         {
@@ -120,7 +191,6 @@ namespace DrawChatApp.Pages
             }
             return base.ShouldRender();
         }
-
 
         public async ValueTask DisposeAsync()
         {

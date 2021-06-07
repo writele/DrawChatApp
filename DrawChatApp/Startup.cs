@@ -62,6 +62,7 @@ namespace DrawChatApp
             {
                 endpoints.MapBlazorHub();
                 endpoints.MapHub<ChatHub>("/chathub");
+                endpoints.MapHub<WhiteboardHub>("/whiteboardhub");
                 endpoints.MapFallbackToPage("/_Host");
             });
         }
