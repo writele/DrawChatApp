@@ -25,56 +25,48 @@ namespace DrawChatApp.Pages
         #endregion
 
         #region WHITEBOARD Fields
-        private HubConnection whiteboardConnection;
+        //private HubConnection whiteboardConnection;
 
-        protected ElementReference _canvasContainer;
-        protected ElementReference _canvasReference;
-        private Context2D _context;
+        //protected ElementReference _canvasContainer;
+        //protected ElementReference _canvasReference;
+        //private Context2D _context;
 
-        private bool mousedown = false;
-        private double canvasx;
-        private double canvasy;
-        private double last_mousex;
-        private double last_mousey;
-        private double mousex;
-        private double mousey;
-        private string clr = "black";
+        //private bool mousedown = false;
+        //private double canvasx;
+        //private double canvasy;
+        //private double last_mousex;
+        //private double last_mousey;
+        //private double mousex;
+        //private double mousey;
+        //private string clr = "black";
 
-        //private MouseEventArgs mouseDownArgs;
-        //private MouseEventArgs mouseUpArgs;
-        //private MouseEventArgs mouseMoveArgs;
-        double prev_x;
-        double prev_y;
-        double x;
-        double y;
+        //private class Position
+        //{
+        //    public double Left { get; set; }
+        //    public double Top { get; set; }
+        //}
 
-        private class Position
-        {
-            public double Left { get; set; }
-            public double Top { get; set; }
-        }
-
-        public bool IsWhiteboardConnected =>
-            whiteboardConnection.State == HubConnectionState.Connected;
+        //public bool IsWhiteboardConnected =>
+        //    whiteboardConnection.State == HubConnectionState.Connected;
         #endregion
 
         #region INITIALIZATION
         protected override async Task OnInitializedAsync()
         {
             await InitializeChatHub();
-            await InitializeWhiteboardHub();
+            //await InitializeWhiteboardHub();
         }
 
-        protected override async Task OnAfterRenderAsync(bool firstRender)
-        {
-            if (firstRender)
-            {
-                _context = await js.GetContext2DAsync(_canvasReference);
+        //protected override async Task OnAfterRenderAsync(bool firstRender)
+        //{
+        //    if (firstRender)
+        //    {
+        //        _context = await js.GetContext2DAsync(_canvasReference);
 
-                var p = await js.InvokeAsync<Position>("eval", $"let e = document.querySelector('[_bl_{_canvasContainer.Id}=\"\"]'); e = e.getBoundingClientRect(); e = {{ 'Left': e.x, 'Top': e.y }}; e");
-                (canvasx, canvasy) = (p.Left, p.Top);
-            }
-        }
+        //        var p = await js.InvokeAsync<Position>("eval", $"let e = document.querySelector('[_bl_{_canvasContainer.Id}=\"\"]'); e = e.getBoundingClientRect(); e = {{ 'Left': e.x, 'Top': e.y }}; e");
+        //        (canvasx, canvasy) = (p.Left, p.Top);
+        //    }
+        //}
 
         protected async Task InitializeChatHub()
         {
@@ -94,36 +86,20 @@ namespace DrawChatApp.Pages
             await hubConnection.StartAsync();
         }
 
-        protected async Task InitializeWhiteboardHub()
-        {
-            // Connect to ChatHub
-            whiteboardConnection = new HubConnectionBuilder()
-                .WithUrl(NavigationManager.ToAbsoluteUri("/whiteboardhub"))
-                .Build();
+        //protected async Task InitializeWhiteboardHub()
+        //{
+        //    // Connect to ChatHub
+        //    whiteboardConnection = new HubConnectionBuilder()
+        //        .WithUrl(NavigationManager.ToAbsoluteUri("/whiteboardhub"))
+        //        .Build();
 
-            // Set up app to receive response from Whiteboard Hub
-            //whiteboardConnection.On<MouseEventArgs>("ReceiveMouseDownArgs", mouseDownArgs => 
-            //{
-            //    MouseDownCanvas(mouseDownArgs);
-            //});
+        //    whiteboardConnection.On<double, double, double, double, string>("ReceiveDrawCanvasArgs", (prev_x, prev_y, x, y, clr) =>
+        //    {
+        //        DrawCanvasAsync(prev_x, prev_y, x, y, clr);
+        //    });
 
-            //whiteboardConnection.On<MouseEventArgs>("ReceiveMouseUpArgs", mouseUpArgs =>
-            //{
-            //    MouseUpCanvas(mouseUpArgs);
-            //});
-
-            //whiteboardConnection.On<MouseEventArgs>("ReceiveMouseMoveArgs", mouseMoveArgs =>
-            //{
-            //    MouseMoveCanvasAsync(mouseMoveArgs);
-            //});
-
-            whiteboardConnection.On<double, double, double, double, string>("ReceiveDrawCanvasArgs", (prev_x, prev_y, x, y, clr) =>
-            {
-                DrawCanvasAsync(prev_x, prev_y, x, y, clr);
-            });
-
-            await whiteboardConnection.StartAsync();
-        }
+        //    await whiteboardConnection.StartAsync();
+        //}
         #endregion
 
         #region CHAT (Send to clients)
@@ -131,54 +107,47 @@ namespace DrawChatApp.Pages
             hubConnection.SendAsync("SendMessage", userInput, messageInput);
         #endregion
 
-        #region WHITEBOARD (Send to clients)
-        //Task OnMouseDown() =>
-        //    whiteboardConnection.SendAsync("SendMouseDownEvent", mouseDownArgs);
-
-        //Task OnMouseUp() =>
-        //    whiteboardConnection.SendAsync("SendMouseUpEvent", mouseUpArgs);
-        #endregion
 
         #region WHITEBOARD Events
-        private void MouseDownCanvas(MouseEventArgs e)
-        {
-            render_required = false;
-            this.last_mousex = mousex = e.ClientX - canvasx;
-            this.last_mousey = mousey = e.ClientY - canvasy;
-            this.mousedown = true;
-        }
+        // These methods are taken from Blazor.Canvas repo: TestProject_Components/Pages/Context2D/WhiteboardExample.razor
+        //private void MouseDownCanvas(MouseEventArgs e)
+        //{
+        //    render_required = false;
+        //    this.last_mousex = mousex = e.ClientX - canvasx;
+        //    this.last_mousey = mousey = e.ClientY - canvasy;
+        //    this.mousedown = true;
+        //}
 
-        private void MouseUpCanvas(MouseEventArgs e)
-        {
-            render_required = false;
-            mousedown = false;
-        }
+        //private void MouseUpCanvas(MouseEventArgs e)
+        //{
+        //    render_required = false;
+        //    mousedown = false;
+        //}
 
-        async Task MouseMoveCanvasAsync(MouseEventArgs e)
-        {
-            render_required = false;
-            if (!mousedown)
-            {
-                return;
-            }
-            mousex = e.ClientX - canvasx;
-            mousey = e.ClientY - canvasy;
-            //await DrawCanvasAsync(mousex, mousey, last_mousex, last_mousey, clr);
-            await whiteboardConnection.SendAsync("SendDrawCanvasArgs", mousex, mousey, last_mousex, last_mousey, clr);
-            last_mousex = mousex;
-            last_mousey = mousey;
-        }
+        //async Task MouseMoveCanvasAsync(MouseEventArgs e)
+        //{
+        //    render_required = false;
+        //    if (!mousedown)
+        //    {
+        //        return;
+        //    }
+        //    mousex = e.ClientX - canvasx;
+        //    mousey = e.ClientY - canvasy;
+        //    await whiteboardConnection.SendAsync("SendDrawCanvasArgs", mousex, mousey, last_mousex, last_mousey, clr);
+        //    last_mousex = mousex;
+        //    last_mousey = mousey;
+        //}
 
-        async Task DrawCanvasAsync(double prev_x, double prev_y, double x, double y, string clr)
-        {
-            await using (var ctx2 = await _context.CreateBatchAsync())
-            {
-                await ctx2.BeginPathAsync();
-                await ctx2.MoveToAsync(prev_x, prev_y);
-                await ctx2.LineToAsync(x, y);
-                await ctx2.StrokeAsync();
-            }
-        }
+        //async Task DrawCanvasAsync(double prev_x, double prev_y, double x, double y, string clr)
+        //{
+        //    await using (var ctx2 = await _context.CreateBatchAsync())
+        //    {
+        //        await ctx2.BeginPathAsync();
+        //        await ctx2.MoveToAsync(prev_x, prev_y);
+        //        await ctx2.LineToAsync(x, y);
+        //        await ctx2.StrokeAsync();
+        //    }
+        //}
         #endregion
 
         private bool render_required = true;

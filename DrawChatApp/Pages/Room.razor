@@ -1,0 +1,43 @@
+﻿@page "/Room/{RoomId}"
+
+
+@* 
+IF Inactive Game:
+
+<p>Waiting for other players</p>
+
+	!IsHost:
+	<p>Please enter your name</p>
+	[Name Input Form]
+
+[List of Other Players]
+[If Host ? Start Game Button]
+
+ELSE IF Active Round: 
+
+[Word = Is Artist ? Shown : Spaces] [Category] 
+[Timer] 
+
+[Whiteboard]
+[Chat/Guess Input]
+[User List with Points. Artist highlighted.]
+
+ELSE IF Between Rounds:
+
+[Display Message = Is Artist ? "Your Word is _____" : "Please wait for artist."] 
+[Is Artist ? Continue button] 
+
+ELSE If Game Over:
+
+<p>Congratulation [winner]</p>
+[Sorted User List with Points]
+[New Game button]
+
+
+*@
+
+
+
+
+
+

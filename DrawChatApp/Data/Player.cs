@@ -11,5 +11,6 @@ namespace DrawChatApp.Data
         public int Points { get; set; } = 0;
         public bool IsHost { get; set; } = false;
         public bool IsArtist { get; set; } = false;
+        public bool IsDone { get; set; } = false;
     }
 }
