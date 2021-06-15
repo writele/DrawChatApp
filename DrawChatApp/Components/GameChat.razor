@@ -1,5 +1,20 @@
-﻿<h3>GameChat</h3>
+﻿@inject NavigationManager NavigationManager
+@inject Microsoft.JSInterop.IJSRuntime js;
+@implements IAsyncDisposable
 
-@code {
+<div class="form-group">
+    <label>
+        Message:
+        <input @bind="messageInput" size="50" />
+    </label>
+</div>
+<button @onclick="Send" disabled="@(!IsConnected)">Send</button>
 
-}
+<hr>
+
+<ul id="messagesList">
+    @foreach (var message in messages)
+    {
+        <li>@message</li>
+    }
+</ul>

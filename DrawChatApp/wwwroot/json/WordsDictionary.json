@@ -1,0 +1,247 @@
+[
+  {
+    "Name": "carnival",
+    "WordCategory": "Thing",
+    "Spellings": ""
+  },
+  {
+    "Name": "whistle",
+    "WordCategory": "Thing",
+    "Spellings": ""
+  },
+  {
+    "Name": "baked beans",
+    "WordCategory": "Thing",
+    "Spellings": ""
+  },
+  {
+    "Name": "otter",
+    "WordCategory": "Thing",
+    "Spellings": ""
+  },
+  {
+    "Name": "aquarium",
+    "WordCategory": "Thing",
+    "Spellings": ""
+  },
+  {
+    "Name": "webcam",
+    "WordCategory": "Thing",
+    "Spellings": "web camera"
+  },
+  {
+    "Name": "banana split",
+    "WordCategory": "Thing",
+    "Spellings": ""
+  },
+  {
+    "Name": "office chair",
+    "WordCategory": "Thing",
+    "Spellings": ""
+  },
+  {
+    "Name": "garage sale",
+    "WordCategory": "Thing",
+    "Spellings": "yard sale"
+  },
+  {
+    "Name": "White House",
+    "WordCategory": "Place",
+    "Spellings": ""
+  },
+  {
+    "Name": "Venice",
+    "WordCategory": "Place",
+    "Spellings": ""
+  },
+  {
+    "Name": "California",
+    "WordCategory": "Place",
+    "Spellings": ""
+  },
+  {
+    "Name": "Russia",
+    "WordCategory": "Place",
+    "Spellings": ""
+  },
+  {
+    "Name": "Texas",
+    "WordCategory": "Place",
+    "Spellings": ""
+  },
+  {
+    "Name": "France",
+    "WordCategory": "Place",
+    "Spellings": ""
+  },
+  {
+    "Name": "Yellowstone",
+    "WordCategory": "Place",
+    "Spellings": "yellow stone,yellowstone national park,yellowstone park,yellow stone park"
+  },
+  {
+    "Name": "Great Wall",
+    "WordCategory": "Place",
+    "Spellings": "great wall of china"
+  },
+  {
+    "Name": "Hollywood",
+    "WordCategory": "Place",
+    "Spellings": ""
+  },
+  {
+    "Name": "North Korea",
+    "WordCategory": "Place",
+    "Spellings": ""
+  },
+  {
+    "Name": "Harry Potter",
+    "WordCategory": "Character",
+    "Spellings": ""
+  },
+  {
+    "Name": "Cinderella",
+    "WordCategory": "Character",
+    "Spellings": ""
+  },
+  {
+    "Name": "Bugs Bunny",
+    "WordCategory": "Character",
+    "Spellings": ""
+  },
+  {
+    "Name": "Flash",
+    "WordCategory": "Character",
+    "Spellings": ""
+  },
+  {
+    "Name": "Sailor Moon",
+    "WordCategory": "Character",
+    "Spellings": ""
+  },
+  {
+    "Name": "Joker",
+    "WordCategory": "Character",
+    "Spellings": "the joker"
+  },
+  {
+    "Name": "Han Solo",
+    "WordCategory": "Character",
+    "Spellings": "hans solo"
+  },
+  {
+    "Name": "Ironman",
+    "WordCategory": "Character",
+    "Spellings": ""
+  },
+  {
+    "Name": "Kermit",
+    "WordCategory": "Character",
+    "Spellings": "kermit the frog"
+  },
+  {
+    "Name": "Mario",
+    "WordCategory": "Character",
+    "Spellings": ""
+  },
+  {
+    "Name": "drawing",
+    "WordCategory": "Activity",
+    "Spellings": ""
+  },
+  {
+    "Name": "typing",
+    "WordCategory": "Activity",
+    "Spellings": ""
+  },
+  {
+    "Name": "miniature golf",
+    "WordCategory": "Activity",
+    "Spellings": "minigolf,mini golf,put put,put-put,putt-putt,putt putt,minigolfing,mini golfing,put puting,put-puting,putt-putting,putt putting,miniature golfing"
+  },
+  {
+    "Name": "sneezing",
+    "WordCategory": "Activity",
+    "Spellings": ""
+  },
+  {
+    "Name": "skipping",
+    "WordCategory": "Activity",
+    "Spellings": ""
+  },
+  {
+    "Name": "dancing",
+    "WordCategory": "Activity",
+    "Spellings": "dance,danceing"
+  },
+  {
+    "Name": "kickboxing",
+    "WordCategory": "Activity",
+    "Spellings": ""
+  },
+  {
+    "Name": "scold",
+    "WordCategory": "Activity",
+    "Spellings": "scolding"
+  },
+  {
+    "Name": "compliment",
+    "WordCategory": "Activity",
+    "Spellings": "praise,complement,complament"
+  },
+  {
+    "Name": "grocery shop",
+    "WordCategory": "Activity",
+    "Spellings": "grocery shopping,buying groceries,buy groceries"
+  },
+  {
+    "Name": "hot",
+    "WordCategory": "Concept",
+    "Spellings": ""
+  },
+  {
+    "Name": "creativity",
+    "WordCategory": "Concept",
+    "Spellings": "creative"
+  },
+  {
+    "Name": "stubborn",
+    "WordCategory": "Concept",
+    "Spellings": ""
+  },
+  {
+    "Name": "tasty",
+    "WordCategory": "Concept",
+    "Spellings": "delicious"
+  },
+  {
+    "Name": "quiet",
+    "WordCategory": "Concept",
+    "Spellings": "silence"
+  },
+  {
+    "Name": "magical",
+    "WordCategory": "Concept",
+    "Spellings": ""
+  },
+  {
+    "Name": "calm",
+    "WordCategory": "Concept",
+    "Spellings": "calming,peaceful"
+  },
+  {
+    "Name": "peace",
+    "WordCategory": "Concept",
+    "Spellings": ""
+  },
+  {
+    "Name": "annoying",
+    "WordCategory": "Concept",
+    "Spellings": ""
+  },
+  {
+    "Name": "ridiculous",
+    "WordCategory": "Concept",
+    "Spellings": "outrageous,outragous"
+  }
+]

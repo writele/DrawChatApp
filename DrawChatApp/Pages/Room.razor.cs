@@ -1,5 +1,7 @@
 ﻿using DrawChatApp.Data;
+using DrawChatApp.Infrastructure;
 using Microsoft.AspNetCore.Components;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics.Eventing.Reader;
 using System.Threading.Tasks;
@@ -9,13 +11,18 @@ namespace DrawChatApp.Pages
     public partial class Room : ComponentBase
     {
         #region FIELDS
-        public int RoomId { get; set; }
+        [Parameter]
+        public string RoomId { get; set; }
+        [Parameter]
+        public string userName { get; set; }
+
+        public Player CurrentPlayer { get; set; }
         public RoomSettings Model { get; set; }
+
         public List<Player> Players { get; set; }
         public List<Word> Words { get; set; }
-        public Word ActiveWord { get; set; }
-        public Player CurrentPlayer { get; set; }
-        public Player? Winner { get; set; }
+        public Word ActiveWord { get; set; }       
+        public Player Winner { get; set; }
         public int ActiveRound { get; set; }
         public bool IsActiveGame;
         public bool IsActiveRound;
@@ -25,7 +32,15 @@ namespace DrawChatApp.Pages
         protected override async Task OnInitializedAsync()
         {
             // Get Model -- pull from settings file
+            Model = await JsonHelper.ReadJsonFile<RoomSettings>($"{RoomId}");
+
+            // Get Words -- pull from json file
+            Words = await JsonHelper.ReadJsonFile<List<Word>>(Constants.WordsDictionaryFileName);
+
+            // Game Hub
             // Get current player
+
+
             // Set words
         }
         #endregion
@@ -80,5 +95,9 @@ namespace DrawChatApp.Pages
         #endregion
         #region WHITEBOARD
         #endregion
+
+        public async ValueTask DisposeAsync()
+        {
+        }
     }
 }

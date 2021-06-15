@@ -1,4 +1,26 @@
 ﻿@page "/Room/{RoomId}"
+@inject NavigationManager NavigationManager
+@inject Microsoft.JSInterop.IJSRuntime js;
+@implements IAsyncDisposable;
+@using DrawChatApp.Components;
+
+@if (Model != null)
+{
+    <h2>@Model.Name</h2>
+
+    <GameWhiteboard IsDisabled="false"></GameWhiteboard>
+
+    <div class="form-group">
+        <label>
+            User:
+            <input @bind="userName" />
+        </label>
+    </div>
+
+    <GameChat userName="@userName"></GameChat>
+}
+
+
 
 
 @* 

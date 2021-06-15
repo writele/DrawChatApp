@@ -5,7 +5,8 @@
 
 <div class="form-group" @ref="_canvasContainer">
     <canvas @ref="_canvasReference" width="400px" height="400px"
-            style="border: 1px solid red"         
+            style="border: 1px solid red"
+            disabled="@(IsDisabled || !IsConnected)"
             @onmousemove="MouseMoveCanvasAsync" 
             @onmouseup="MouseUpCanvas" 
             @onmousedown="MouseDownCanvas">

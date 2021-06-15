@@ -12,6 +12,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using DrawChatApp.Hubs;
+using Newtonsoft.Json.Converters;
+using System.Text.Json.Serialization;
 
 namespace DrawChatApp
 {
@@ -35,6 +37,14 @@ namespace DrawChatApp
                 opts.MimeTypes = ResponseCompressionDefaults.MimeTypes.Concat(
                     new[] { "application/octet-stream" });
             });
+
+            // Added so strings in JSON files can be converted to Enums
+            // thank you https://gist.github.com/regisdiogo/27f62ef83a804668eb0d9d0f63989e3e
+            services.AddMvc()
+                .AddJsonOptions(options => {
+                    options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter());
+                    //options.JsonSerializerOptions.IgnoreNullValues = true;
+                });
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
