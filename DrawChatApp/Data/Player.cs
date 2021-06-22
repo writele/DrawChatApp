@@ -7,6 +7,8 @@ namespace DrawChatApp.Data
 {
     public class Player
     {
+        public string PlayerId { get; set; }     
+        public string RoomId { get; set; }
         public string Name { get; set; } = string.Empty;
         public int Points { get; set; } = 0;
         public bool IsHost { get; set; } = false;

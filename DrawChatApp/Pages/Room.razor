@@ -7,17 +7,34 @@
 @if (Model != null)
 {
     <h2>@Model.Name</h2>
+    @if (!IsActiveGame)
+    {
+        <p>Waiting for other players</p>
+        if (CurrentPlayer == null || string.IsNullOrEmpty(CurrentPlayer.Name))
+        {
+            <p>Please enter your name</p>
+            <div class="form-group">
+                <label>
+                    <input @bind="userName" />
+                </label>
+            </div>
+            <button disabled="@(string.IsNullOrEmpty(userName) || !IsConnected)" @onclick="AddPlayer">Enter</button>
+        }
 
-    <GameWhiteboard IsDisabled="false"></GameWhiteboard>
+        <p>Current players:</p>
+        <ul>
+        @foreach (var p in Players)
+        {
+            <li>@p.Name</li>
+        }
+        </ul>
+    }
+    else
+    {
+        <GameWhiteboard IsDisabled="false"></GameWhiteboard>
 
-    <div class="form-group">
-        <label>
-            User:
-            <input @bind="userName" />
-        </label>
-    </div>
-
-    <GameChat userName="@userName"></GameChat>
+        <GameChat userName="@userName"></GameChat>
+    }
 }
 
 

@@ -1,9 +1,11 @@
 ﻿using DrawChatApp.Data;
 using DrawChatApp.Infrastructure;
 using Microsoft.AspNetCore.Components;
+using Microsoft.AspNetCore.SignalR.Client;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics.Eventing.Reader;
+using System.Linq;
 using System.Threading.Tasks;
 
 namespace DrawChatApp.Pages
@@ -14,23 +16,28 @@ namespace DrawChatApp.Pages
         [Parameter]
         public string RoomId { get; set; }
         [Parameter]
-        public string userName { get; set; }
+        public string userName { get; set; } = "";
 
         public Player CurrentPlayer { get; set; }
         public RoomSettings Model { get; set; }
 
-        public List<Player> Players { get; set; }
+        public List<Player> Players { get; set; } = new List<Player>();
         public List<Word> Words { get; set; }
         public Word ActiveWord { get; set; }       
         public Player Winner { get; set; }
         public int ActiveRound { get; set; }
         public bool IsActiveGame;
         public bool IsActiveRound;
+
+        private HubConnection hubConnection;
+        public bool IsConnected =>
+            hubConnection.State == HubConnectionState.Connected;
         #endregion
 
         #region INITIALIZATION
         protected override async Task OnInitializedAsync()
         {
+            IsActiveGame = false;
             // Get Model -- pull from settings file
             Model = await JsonHelper.ReadJsonFile<RoomSettings>($"{RoomId}");
 
@@ -38,16 +45,38 @@ namespace DrawChatApp.Pages
             Words = await JsonHelper.ReadJsonFile<List<Word>>(Constants.WordsDictionaryFileName);
 
             // Game Hub
+            await InitializeGameHub();
+
             // Get current player
 
 
             // Set words
         }
+
+        protected async Task InitializeGameHub()
+        {
+            hubConnection = new HubConnectionBuilder()
+                .WithUrl(NavigationManager.ToAbsoluteUri("/gamehub"))
+                .Build();
+
+            hubConnection.On<string, List<Player>>("GetPlayers", (roomId, playersList) =>
+            {
+                Players = playersList;
+                CurrentPlayer = playersList.Where(x => x.Name == userName).First();
+                StateHasChanged();
+            });
+
+            await hubConnection.StartAsync();
+        }
         #endregion
         #region GAME
-        private void AddPlayer()
+        private async Task AddPlayer()
         {
+            var newPlayer = new Player();
+            newPlayer.Name = userName;
+            newPlayer.RoomId = RoomId;
             // Add player via GameHub
+            await hubConnection.SendAsync("UpdatePlayers", RoomId, Players, newPlayer);
         }
         private void StartGame()
         {
