@@ -3,39 +3,51 @@
 @inject Microsoft.JSInterop.IJSRuntime js;
 @implements IAsyncDisposable;
 @using DrawChatApp.Components;
+@using System.Text.RegularExpressions;
 
 @if (Model != null)
 {
     <h2>@Model.Name</h2>
-    <h3>@ConnectionId</h3>
+
     @if (!IsActiveGame)
     {
         <p>Waiting for other players</p>
-        if (CurrentPlayer == null || string.IsNullOrEmpty(CurrentPlayer.Name))
-        {
-            <p>Please enter your name</p>
-            <div class="form-group">
-                <label>
-                    <input @bind="userName" />
-                </label>
-            </div>
-            <button disabled="@(string.IsNullOrEmpty(userName) || !IsConnected)" @onclick="AddPlayer">Enter</button>
-        }
 
-        <p>Current players:</p>
-        <ul>
-        @foreach (var p in Players)
-        {
-            <li>@p.Name</li>
-        }
-        </ul>
+        <p>Please enter your name</p>
+        <div class="form-group">
+            <label>
+                <input @bind="userName" />
+            </label>
+        </div>
+        <button disabled="@(!IsConnected)" @onclick="UpdatePlayer">Update Name</button>
+
+        <br><br>
+
+        <button disabled="@(Players.Count > 2)" @onclick="StartGame">Start Game</button>
     }
     else
     {
-        <GameWhiteboard IsDisabled="false"></GameWhiteboard>
+        @if (CurrentPlayer.IsArtist == true)
+        {
+            <p>Your Word is '@ActiveWord'</p>
+        }
+        else
+        {
+            <p>@(Regex.Replace(ActiveWord.Name, "[A-Za-z ]", " _ "))</p>
+        }
+
+        <GameWhiteboard IsDisabled="@(!CurrentPlayer.IsArtist)"></GameWhiteboard>
 
         <GameChat userName="@userName"></GameChat>
     }
+
+    <p>Current players:</p>
+    <ul>
+    @foreach (var p in Players)
+    {
+        <li>@p.Name</li>
+    }
+    </ul>
 }
 
 

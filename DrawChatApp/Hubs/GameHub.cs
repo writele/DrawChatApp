@@ -15,8 +15,17 @@ namespace DrawChatApp.Hubs
 
         public string GetConnectionId() => Context.ConnectionId;
 
+        public async Task AddToGroup(string groupName)
+        {
+            await Groups.AddToGroupAsync(Context.ConnectionId, groupName);
+        }
 
-        public async Task UpdatePlayers(string connectionId, string roomId, List<Player> currentPlayers, Player updatedPlayer)
+        public async Task RemoveFromGroup(string groupName)
+        {
+            await Groups.RemoveFromGroupAsync(Context.ConnectionId, groupName);
+        }
+
+        public async Task CreatePlayer(string roomId, List<Player> currentPlayers, Player updatedPlayer)
         {
             // Add playerId if needed
             var playerId = !string.IsNullOrEmpty(updatedPlayer.PlayerId) ? updatedPlayer.PlayerId : 
@@ -39,14 +48,75 @@ namespace DrawChatApp.Hubs
                     playersList.Add(updatedPlayer);
                 }
 
-
-                List<Player> updatedPlayersList = await PlayersCache.GetOrCreate(roomId, playersList);
+                List<Player> updatedPlayersList;
+                if (currentPlayers.Count == 0)
+                {
+                    updatedPlayersList = await PlayersCache.GetOrCreate(roomId, playersList);
+                }
+                else
+                {
+                    updatedPlayersList = await PlayersCache.Update(roomId, playersList);
+                }
 
                 if (updatedPlayersList != null)
                 {
-                    await Clients.Client(connectionId).SendAsync("GetPlayers", roomId, updatedPlayersList);
+                    await Clients.Groups(roomId).SendAsync("GetPlayers", roomId, updatedPlayersList);
                 }
             }
         }
+
+        public async Task UpdatePlayer(string roomId, List<Player> currentPlayers, Player updatedPlayer)
+        {
+            // Add playerId if needed
+            var playerId = !string.IsNullOrEmpty(updatedPlayer.PlayerId) ? updatedPlayer.PlayerId :
+                $"{updatedPlayer.Name}{updatedPlayer.RoomId}";
+            updatedPlayer.PlayerId = playerId;
+
+            var playersList = await PlayersCache.GetOrCreate(roomId, currentPlayers);
+
+            if (playersList != null)
+            {
+                var originalPlayer = playersList.Where(x => x.PlayerId == playerId).FirstOrDefault();
+                var index = playersList.IndexOf(originalPlayer);
+
+                if (index != -1)
+                {
+                    playersList[index] = updatedPlayer;
+                }
+                else
+                {
+                    playersList.Add(updatedPlayer);
+                }
+
+
+                List<Player> updatedPlayersList = await PlayersCache.Update(roomId, playersList);
+
+                if (updatedPlayersList != null)
+                {
+                    await Clients.Groups(roomId).SendAsync("GetPlayers", roomId, updatedPlayersList);
+                }
+            }
+        }
+
+        public async Task UpdatePlayerList(string roomId, List<Player> newPlayersList)
+        {
+                List<Player> updatedPlayersList = await PlayersCache.Update(roomId, newPlayersList);
+
+                if (updatedPlayersList != null)
+                {
+                    await Clients.Groups(roomId).SendAsync("GetPlayers", roomId, updatedPlayersList);
+                }
+        }
+
+        public async Task GetPlayerList(string roomId, List<Player> newPlayersList)
+        {
+            List<Player> updatedPlayersList = await PlayersCache.GetOrCreate(roomId, newPlayersList);
+
+            if (updatedPlayersList != null)
+            {
+                await Clients.Groups(roomId).SendAsync("GetPlayers", roomId, updatedPlayersList);
+            }
+        }
+
     }
 }

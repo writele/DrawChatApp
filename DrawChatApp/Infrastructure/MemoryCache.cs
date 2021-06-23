@@ -38,6 +38,28 @@ namespace DrawChatApp.Infrastructure
 
             return cacheEntry;
         }
+
+        public async Task<TItem> Update(object key, TItem newCacheEntry)
+        {
+            TItem cacheEntry;
+            if (!_cache.TryGetValue(key, out cacheEntry))// Look for cache key.
+            {
+                SemaphoreSlim mylock = _locks.GetOrAdd(key, k => new SemaphoreSlim(1, 1));
+
+                await mylock.WaitAsync();
+                try
+                {
+                    cacheEntry = newCacheEntry;
+                    _cache.Set(key, cacheEntry);
+                }
+                finally
+                {
+                    mylock.Release();
+                }
+            }
+
+            return cacheEntry;
+        }
     }
 
     // Example
