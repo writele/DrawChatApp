@@ -18,6 +18,7 @@ namespace DrawChatApp.Pages
         [Parameter]
         public string userName { get; set; } = "";
 
+        public string ConnectionId { get; set; }
         public Player CurrentPlayer { get; set; }
         public RoomSettings Model { get; set; }
 
@@ -67,6 +68,8 @@ namespace DrawChatApp.Pages
             });
 
             await hubConnection.StartAsync();
+
+            ConnectionId = await hubConnection.InvokeAsync<string>("GetConnectionId");
         }
         #endregion
         #region GAME
@@ -76,7 +79,8 @@ namespace DrawChatApp.Pages
             newPlayer.Name = userName;
             newPlayer.RoomId = RoomId;
             // Add player via GameHub
-            await hubConnection.SendAsync("UpdatePlayers", RoomId, Players, newPlayer);
+            List<Player> originalPlayers = new List<Player>(Players);
+            await hubConnection.SendAsync("UpdatePlayers", ConnectionId, RoomId, originalPlayers, newPlayer);
         }
         private void StartGame()
         {

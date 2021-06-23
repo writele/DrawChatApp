@@ -13,8 +13,9 @@ namespace DrawChatApp.Infrastructure
         private MemoryCache _cache = new MemoryCache(new MemoryCacheOptions());
         private ConcurrentDictionary<object, SemaphoreSlim> _locks = new ConcurrentDictionary<object, SemaphoreSlim>();
 
-        public async Task<TItem> GetOrCreate(object key, TItem cacheEntry)
+        public async Task<TItem> GetOrCreate(object key, TItem newCacheEntry)
         {
+            TItem cacheEntry;
             if (!_cache.TryGetValue(key, out cacheEntry))// Look for cache key.
             {
                 SemaphoreSlim mylock = _locks.GetOrAdd(key, k => new SemaphoreSlim(1, 1));
@@ -25,6 +26,7 @@ namespace DrawChatApp.Infrastructure
                     if (!_cache.TryGetValue(key, out cacheEntry))
                     {
                         // Key not in cache, so get data.
+                        cacheEntry = newCacheEntry;
                         _cache.Set(key, cacheEntry);
                     }
                 }
@@ -33,6 +35,7 @@ namespace DrawChatApp.Infrastructure
                     mylock.Release();
                 }
             }
+
             return cacheEntry;
         }
     }

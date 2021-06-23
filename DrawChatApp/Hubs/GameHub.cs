@@ -2,6 +2,7 @@
 using DrawChatApp.Infrastructure;
 using Microsoft.AspNetCore.SignalR;
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -11,30 +12,41 @@ namespace DrawChatApp.Hubs
     public class GameHub : Hub
     {
         MemoryCache<List<Player>> PlayersCache { get; set; } = new MemoryCache<List<Player>>();
-        public async Task UpdatePlayers(string roomId, List<Player> currentPlayers, Player updatedPlayer)
+
+        public string GetConnectionId() => Context.ConnectionId;
+
+
+        public async Task UpdatePlayers(string connectionId, string roomId, List<Player> currentPlayers, Player updatedPlayer)
         {
             // Add playerId if needed
             var playerId = !string.IsNullOrEmpty(updatedPlayer.PlayerId) ? updatedPlayer.PlayerId : 
                 $"{updatedPlayer.Name}{updatedPlayer.RoomId}";
                 updatedPlayer.PlayerId = playerId;
 
-            List<Player> playersList = await PlayersCache.GetOrCreate(roomId, currentPlayers);
-            var originalPlayer = playersList.Where(x => x.PlayerId == playerId).First();
-            var index = playersList.IndexOf(originalPlayer);
+            var playersList = await PlayersCache.GetOrCreate(roomId, currentPlayers);
 
-            if (index != -1)
+            if (playersList != null)
             {
-                playersList[index] = updatedPlayer;
-            }
-            else
-            {
-                playersList.Add(updatedPlayer);
-            }
-                
+                var originalPlayer = playersList.Where(x => x.PlayerId == playerId).FirstOrDefault();
+                var index = playersList.IndexOf(originalPlayer);
 
-            List<Player> updatedPlayersList = await PlayersCache.GetOrCreate(roomId, playersList);
+                if (index != -1)
+                {
+                    playersList[index] = updatedPlayer;
+                }
+                else
+                {
+                    playersList.Add(updatedPlayer);
+                }
 
-            await Clients.All.SendAsync("GetPlayers", roomId, updatedPlayersList);
+
+                List<Player> updatedPlayersList = await PlayersCache.GetOrCreate(roomId, playersList);
+
+                if (updatedPlayersList != null)
+                {
+                    await Clients.Client(connectionId).SendAsync("GetPlayers", roomId, updatedPlayersList);
+                }
+            }
         }
     }
 }
