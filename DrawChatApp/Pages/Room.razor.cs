@@ -1,5 +1,6 @@
 ﻿using DrawChatApp.Data;
 using DrawChatApp.Infrastructure;
+using DrawChatApp.Services;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.SignalR.Client;
 using System;
@@ -64,13 +65,12 @@ namespace DrawChatApp.Pages
             hubConnection.On<string, List<Player>>("GetPlayers", (roomId, playersList) =>
             {
                 Players = playersList;
-                CurrentPlayer = playersList.Where(x => x.Name == userName).FirstOrDefault();
+                if (Players.Count > 0)
+                    CurrentPlayer = playersList.Where(x => x.Name == userName).FirstOrDefault();
                 StateHasChanged();
             });
 
             await hubConnection.StartAsync();
-
-            //ConnectionId = await hubConnection.InvokeAsync<string>("GetConnectionId");
         }
         #endregion
         #region GAME
@@ -81,7 +81,7 @@ namespace DrawChatApp.Pages
             newPlayer.RoomId = RoomId;
             // Add player via GameHub
             List<Player> originalPlayers = new List<Player>(Players);
-            await hubConnection.SendAsync("CreatePlayer", RoomId, originalPlayers, newPlayer);
+            await hubConnection.SendAsync("UpdatePlayer", RoomId, newPlayer);
         }
         private async Task UpdatePlayer()
         {
@@ -95,16 +95,17 @@ namespace DrawChatApp.Pages
                 CurrentPlayer.RoomId = RoomId;
                 // Update player via GameHub
                 List<Player> originalPlayers = new List<Player>(Players);
-                await hubConnection.SendAsync("UpdatePlayer", RoomId, originalPlayers, CurrentPlayer);
+                await hubConnection.SendAsync("UpdatePlayer", RoomId, CurrentPlayer);
             }
         }
-        private void StartGame()
+        private async Task StartGame()
         {
             // Reset Points
             // Set active player 
             List<Player> updatedPlayers = new List<Player>(Players);
             updatedPlayers.ForEach(x => x.Points = 0);
             updatedPlayers.FirstOrDefault().IsArtist = true;
+            await hubConnection.SendAsync("UpdatePlayersList", RoomId, updatedPlayers);
 
             // Set Active word
             var index = new Random().Next(Words.Count);

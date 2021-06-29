@@ -1,8 +1,7 @@
 ﻿using DrawChatApp.Data;
 using DrawChatApp.Infrastructure;
+using DrawChatApp.Services;
 using Microsoft.AspNetCore.SignalR;
-using System;
-using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -12,6 +11,12 @@ namespace DrawChatApp.Hubs
     public class GameHub : Hub
     {
         MemoryCache<List<Player>> PlayersCache { get; set; } = new MemoryCache<List<Player>>();
+        private readonly IPlayersService _playersService;
+
+        public GameHub(IPlayersService playersService)
+        {
+            _playersService = playersService;
+        }
 
         public string GetConnectionId() => Context.ConnectionId;
 
@@ -25,38 +30,20 @@ namespace DrawChatApp.Hubs
             await Groups.RemoveFromGroupAsync(Context.ConnectionId, groupName);
         }
 
-        public async Task CreatePlayer(string roomId, List<Player> currentPlayers, Player updatedPlayer)
+        // Update Player in existing Player List
+        public async Task UpdatePlayer(string roomId, Player updatedPlayer)
         {
             // Add playerId if needed
             var playerId = !string.IsNullOrEmpty(updatedPlayer.PlayerId) ? updatedPlayer.PlayerId : 
                 $"{updatedPlayer.Name}{updatedPlayer.RoomId}";
                 updatedPlayer.PlayerId = playerId;
 
-            var playersList = await PlayersCache.GetOrCreate(roomId, currentPlayers);
+            // Get (or create) the Players List for the Room Id
+            var playersList = await PlayersCache.GetOrCreate(roomId, async () => await _playersService.GetOrCreateListAsync(roomId));
 
             if (playersList != null)
             {
-                var originalPlayer = playersList.Where(x => x.PlayerId == playerId).FirstOrDefault();
-                var index = playersList.IndexOf(originalPlayer);
-
-                if (index != -1)
-                {
-                    playersList[index] = updatedPlayer;
-                }
-                else
-                {
-                    playersList.Add(updatedPlayer);
-                }
-
-                List<Player> updatedPlayersList;
-                if (currentPlayers.Count == 0)
-                {
-                    updatedPlayersList = await PlayersCache.GetOrCreate(roomId, playersList);
-                }
-                else
-                {
-                    updatedPlayersList = await PlayersCache.Update(roomId, playersList);
-                }
+                List<Player> updatedPlayersList = await PlayersCache.GetOrCreate(roomId, async () => await _playersService.AddOrUpdatePlayerAsync(roomId, updatedPlayer));
 
                 if (updatedPlayersList != null)
                 {
@@ -65,58 +52,31 @@ namespace DrawChatApp.Hubs
             }
         }
 
-        public async Task UpdatePlayer(string roomId, List<Player> currentPlayers, Player updatedPlayer)
+        public async Task CreateOrGetPlayersList(string roomId)
         {
-            // Add playerId if needed
-            var playerId = !string.IsNullOrEmpty(updatedPlayer.PlayerId) ? updatedPlayer.PlayerId :
-                $"{updatedPlayer.Name}{updatedPlayer.RoomId}";
-            updatedPlayer.PlayerId = playerId;
-
-            var playersList = await PlayersCache.GetOrCreate(roomId, currentPlayers);
+            // Get (or create) Player List using Room Id
+            var playersList = await PlayersCache.GetOrCreate(roomId, async () => await _playersService.GetOrCreateListAsync(roomId));
 
             if (playersList != null)
             {
-                var originalPlayer = playersList.Where(x => x.PlayerId == playerId).FirstOrDefault();
-                var index = playersList.IndexOf(originalPlayer);
-
-                if (index != -1)
-                {
-                    playersList[index] = updatedPlayer;
-                }
-                else
-                {
-                    playersList.Add(updatedPlayer);
-                }
-
-
-                List<Player> updatedPlayersList = await PlayersCache.Update(roomId, playersList);
-
-                if (updatedPlayersList != null)
-                {
-                    await Clients.Groups(roomId).SendAsync("GetPlayers", roomId, updatedPlayersList);
-                }
+                await Clients.Groups(roomId).SendAsync("GetPlayers", roomId, playersList);
             }
         }
 
-        public async Task UpdatePlayerList(string roomId, List<Player> newPlayersList)
+        public async Task UpdatePlayersList(string roomId, List<Player> updatedList)
         {
-                List<Player> updatedPlayersList = await PlayersCache.Update(roomId, newPlayersList);
-
-                if (updatedPlayersList != null)
-                {
-                    await Clients.Groups(roomId).SendAsync("GetPlayers", roomId, updatedPlayersList);
-                }
-        }
-
-        public async Task GetPlayerList(string roomId, List<Player> newPlayersList)
-        {
-            List<Player> updatedPlayersList = await PlayersCache.GetOrCreate(roomId, newPlayersList);
-
-            if (updatedPlayersList != null)
+            foreach(var player in updatedList)
             {
-                await Clients.Groups(roomId).SendAsync("GetPlayers", roomId, updatedPlayersList);
+                await _playersService.AddOrUpdatePlayerAsync(roomId, player);
+            }
+
+            // Get Player List using Room Id
+            var playersList = await PlayersCache.GetOrCreate(roomId, async () => await _playersService.GetOrCreateListAsync(roomId));
+
+            if (playersList != null)
+            {
+                await Clients.Groups(roomId).SendAsync("GetPlayers", roomId, playersList);
             }
         }
-
     }
 }

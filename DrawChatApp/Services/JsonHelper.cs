@@ -1,9 +1,10 @@
-﻿using System;
+﻿using DrawChatApp.Infrastructure;
+using System;
 using System.IO;
 using System.Text.Json;
 using System.Threading.Tasks;
 
-namespace DrawChatApp.Infrastructure
+namespace DrawChatApp.Services
 {
     public static class JsonHelper
     {
