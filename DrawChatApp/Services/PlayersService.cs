@@ -1,29 +1,55 @@
 ﻿using DrawChatApp.Data;
 using DrawChatApp.Infrastructure;
+using MongoDB.Driver;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Security.Cryptography.X509Certificates;
 using System.Threading.Tasks;
 
 namespace DrawChatApp.Services
 {
     public class PlayersService : IPlayersService
     {
+        private readonly IMongoCollection<Player> _players;
+
+        public PlayersService(IGameDatabaseSettings settings)
+        {
+            var client = new MongoClient(settings.ConnectionString);
+            var database = client.GetDatabase(settings.DatabaseName);
+            _players = database.GetCollection<Player>(settings.PlayersCollectionName);
+        }
+
         public async Task<List<Player>> GetOrCreateListAsync(string listId)
         {
-            return new List<Player>();
+            //var filter = Builders<BsonDocument>.Filter.Eq("RoomId", listId);
+            return await _players.Find<Player>(x => x.RoomId == listId).ToListAsync() ?? new List<Player>();
         }
+
         public async Task<List<Player>> AddOrUpdatePlayerAsync(string listId, Player player)
         {
-            return new List<Player>();
+            var newPlayer = _players.Find<Player>(x => x.PlayerId == player.PlayerId).FirstOrDefaultAsync();
+            if (newPlayer.Result == null)
+            {
+                await _players.InsertOneAsync(player);
+            }
+            else
+            {
+                await _players.ReplaceOneAsync(x => x.PlayerId == player.PlayerId, player);
+            }
+
+            return await GetOrCreateListAsync(listId);
         }
+
         public async Task<List<Player>> RemovePlayerAsync(string listId, string playerId)
         {
-            return new List<Player>();
+            await _players.DeleteOneAsync(x => x.PlayerId == playerId);
+            return await GetOrCreateListAsync(listId);
         }
+
         public async Task DeleteListAsync(string listId)
         {
-
+            await _players.DeleteManyAsync(x => x.RoomId == listId);
         }
     }
 }

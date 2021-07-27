@@ -1,12 +1,15 @@
-<Project Sdk="Microsoft.NET.Sdk.Web">
+﻿<Project Sdk="Microsoft.NET.Sdk.Web">
 
   <PropertyGroup>
     <TargetFramework>netcoreapp3.1</TargetFramework>
+    <UserSecretsId>7aa97c7e-05f6-40b6-aced-711360c91890</UserSecretsId>
   </PropertyGroup>
 
   <ItemGroup>
     <PackageReference Include="Excubo.Blazor.Canvas" Version="2.5.16" />
     <PackageReference Include="Microsoft.AspNetCore.SignalR.Client" Version="5.0.4" />
+    <PackageReference Include="MongoDB.Bson" Version="2.13.0" />
+    <PackageReference Include="MongoDB.Driver" Version="2.13.0" />
     <PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
     <PackageReference Include="System.Text.Encodings.Web" Version="5.0.1" />
   </ItemGroup>
@@ -14,5 +17,7 @@
   <ItemGroup>
     <Folder Include="wwwroot\json\" />
   </ItemGroup>
+
+  <ProjectExtensions><VisualStudio><UserProperties dbsettings_1json__JsonSchema="https://json.schemastore.org/appsettings.json" /></VisualStudio></ProjectExtensions>
 
 </Project>

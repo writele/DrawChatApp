@@ -53,7 +53,7 @@ namespace DrawChatApp.Pages
             // Add player
             //await AddPlayer();
             // Load current players
-            await hubConnection.InvokeAsync("GetPlayerList", RoomId, Players);
+            await hubConnection.InvokeAsync("CreateOrGetPlayersList", RoomId);
         }
 
         protected async Task InitializeGameHub()
@@ -80,7 +80,6 @@ namespace DrawChatApp.Pages
             newPlayer.Name = userName;
             newPlayer.RoomId = RoomId;
             // Add player via GameHub
-            List<Player> originalPlayers = new List<Player>(Players);
             await hubConnection.SendAsync("UpdatePlayer", RoomId, newPlayer);
         }
         private async Task UpdatePlayer()
@@ -94,7 +93,6 @@ namespace DrawChatApp.Pages
                 CurrentPlayer.Name = userName;
                 CurrentPlayer.RoomId = RoomId;
                 // Update player via GameHub
-                List<Player> originalPlayers = new List<Player>(Players);
                 await hubConnection.SendAsync("UpdatePlayer", RoomId, CurrentPlayer);
             }
         }

@@ -1,5 +1,6 @@
 ﻿using DrawChatApp.Data;
 using DrawChatApp.Infrastructure;
+using DrawChatApp.Services;
 using Excubo.Blazor.Canvas;
 using Excubo.Blazor.Canvas.Contexts;
 using Microsoft.AspNetCore.Components;

@@ -16,6 +16,7 @@ using Newtonsoft.Json.Converters;
 using System.Text.Json.Serialization;
 using DrawChatApp.Services;
 using DrawChatApp.Infrastructure;
+using Microsoft.Extensions.Options;
 
 namespace DrawChatApp
 {
@@ -32,9 +33,15 @@ namespace DrawChatApp
         // For more information on how to configure your application, visit https://go.microsoft.com/fwlink/?LinkID=398940
         public void ConfigureServices(IServiceCollection services)
         {
-            services.AddScoped<IPlayersService, PlayersService>();
+            
             services.AddRazorPages();
             services.AddServerSideBlazor();
+
+            services.Configure<GameDatabaseSettings>(
+                Configuration.GetSection(nameof(GameDatabaseSettings)));
+            services.AddSingleton<IGameDatabaseSettings>(provider =>
+                provider.GetRequiredService<IOptions<GameDatabaseSettings>>().Value);
+            services.AddScoped<IPlayersService, PlayersService>();
             services.AddResponseCompression(opts =>
             {
                 opts.MimeTypes = ResponseCompressionDefaults.MimeTypes.Concat(
