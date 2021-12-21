@@ -42,6 +42,7 @@ namespace DrawChatApp
             services.AddSingleton<IGameDatabaseSettings>(provider =>
                 provider.GetRequiredService<IOptions<GameDatabaseSettings>>().Value);
             services.AddScoped<IPlayersService, PlayersService>();
+            services.AddScoped<IRoomSettingsService, RoomSettingsService>();
             services.AddResponseCompression(opts =>
             {
                 opts.MimeTypes = ResponseCompressionDefaults.MimeTypes.Concat(

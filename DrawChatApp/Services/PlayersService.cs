@@ -1,6 +1,8 @@
 ﻿using DrawChatApp.Data;
 using DrawChatApp.Infrastructure;
+using MongoDB.Bson;
 using MongoDB.Driver;
+using MongoDB.Driver.Core;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -22,20 +24,21 @@ namespace DrawChatApp.Services
 
         public async Task<List<Player>> GetOrCreateListAsync(string listId)
         {
-            //var filter = Builders<BsonDocument>.Filter.Eq("RoomId", listId);
-            return await _players.Find<Player>(x => x.RoomId == listId).ToListAsync() ?? new List<Player>();
+            return await _players.Find<Player>(x => x.RoomId == listId).ToListAsync() ?? new List<Player>();           
         }
 
         public async Task<List<Player>> AddOrUpdatePlayerAsync(string listId, Player player)
         {
-            var newPlayer = _players.Find<Player>(x => x.PlayerId == player.PlayerId).FirstOrDefaultAsync();
+            var newPlayer = _players
+                .Find<Player>(x => x.PlayerId == player.PlayerId && x.ConnectionId == player.ConnectionId)
+                .FirstOrDefaultAsync();
             if (newPlayer.Result == null)
             {
                 await _players.InsertOneAsync(player);
             }
             else
             {
-                await _players.ReplaceOneAsync(x => x.PlayerId == player.PlayerId, player);
+                await _players.ReplaceOneAsync(x => x.PlayerId == player.PlayerId && x.ConnectionId == player.ConnectionId, player);
             }
 
             return await GetOrCreateListAsync(listId);

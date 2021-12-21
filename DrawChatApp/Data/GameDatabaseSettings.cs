@@ -8,6 +8,7 @@ namespace DrawChatApp.Data
     public class GameDatabaseSettings : IGameDatabaseSettings
     {
         public string PlayersCollectionName { get; set; }
+        public string RoomSettingsCollectionName { get; set; }
         public string ConnectionString { get; set; }
         public string DatabaseName { get; set; }
     }
@@ -15,6 +16,7 @@ namespace DrawChatApp.Data
     public interface IGameDatabaseSettings
     {
         string PlayersCollectionName { get; set; }
+        string RoomSettingsCollectionName { get; set; }
         string ConnectionString { get; set; }
         string DatabaseName { get; set; }
     }

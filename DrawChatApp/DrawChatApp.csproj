@@ -8,8 +8,9 @@
   <ItemGroup>
     <PackageReference Include="Excubo.Blazor.Canvas" Version="2.5.16" />
     <PackageReference Include="Microsoft.AspNetCore.SignalR.Client" Version="5.0.4" />
-    <PackageReference Include="MongoDB.Bson" Version="2.13.0" />
-    <PackageReference Include="MongoDB.Driver" Version="2.13.0" />
+    <PackageReference Include="MongoDB.Bson" Version="2.13.1" />
+    <PackageReference Include="MongoDB.Driver" Version="2.13.1" />
+    <PackageReference Include="MongoDB.Driver.Core" Version="2.13.1" />
     <PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
     <PackageReference Include="System.Text.Encodings.Web" Version="5.0.1" />
   </ItemGroup>
@@ -18,6 +19,6 @@
     <Folder Include="wwwroot\json\" />
   </ItemGroup>
 
-  <ProjectExtensions><VisualStudio><UserProperties dbsettings_1json__JsonSchema="https://json.schemastore.org/appsettings.json" /></VisualStudio></ProjectExtensions>
+  <ProjectExtensions><VisualStudio><UserProperties /></VisualStudio></ProjectExtensions>
 
 </Project>

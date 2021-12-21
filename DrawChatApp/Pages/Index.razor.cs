@@ -18,14 +18,24 @@ namespace DrawChatApp.Pages
     public partial class Index : ComponentBase
     {
         [Inject] private NavigationManager NavManager { get; set; } = null!;
+        [Inject] private IRoomSettingsService Service { get; set; } = null!;
 
         private string roomNameInput;
 
         public RoomSettings RoomSettings { get; set; } = new RoomSettings();
 
+        //private HubConnection hubConnection;
+        //public bool IsConnected =>
+        //    hubConnection.State == HubConnectionState.Connected;
+
         protected override async Task OnInitializedAsync()
         {
+            //hubConnection = new HubConnectionBuilder()
+            //    .WithUrl(NavigationManager.ToAbsoluteUri("/gamehub"))
+            //    .Build();
 
+
+            //await hubConnection.StartAsync();
         }
 
         public async Task CreateGame()
@@ -39,11 +49,15 @@ namespace DrawChatApp.Pages
             RoomSettings.Name = roomNameInput;
             RoomSettings.MaxRounds = 1;
             RoomSettings.MaxTime = 30000;
+            RoomSettings.IsActiveGame = false;
             //RoomSettings.PlayerHostName = userNameInput;
             RoomSettings.AllowedCategories = new List<WordCategory> { WordCategory.Thing, WordCategory.Character, WordCategory.Activity };
 
-            // Create Room Settings file
-            await JsonHelper.CreateJsonFile($"{roomId}", RoomSettings);
+            // Get Words -- pull from json file
+            RoomSettings.Words = await JsonHelper.ReadJsonFile<List<Word>>(Constants.WordsDictionaryFileName);
+
+            // Create Room Settings
+            await Service.CreateRoomSettingsAsync(roomId, RoomSettings);
 
             // Navigate to Room
             NavManager.NavigateTo($"/Room/{roomId}");

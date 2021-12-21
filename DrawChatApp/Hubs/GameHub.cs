@@ -12,10 +12,12 @@ namespace DrawChatApp.Hubs
     {
         //MemoryCache<List<Player>> PlayersCache { get; set; } = new MemoryCache<List<Player>>();
         private readonly IPlayersService _playersService;
+        private readonly IRoomSettingsService _settingsService;
 
-        public GameHub(IPlayersService playersService)
+        public GameHub(IPlayersService playersService, IRoomSettingsService settingsService)
         {
             _playersService = playersService;
+            _settingsService = settingsService;
         }
 
         public string GetConnectionId() => Context.ConnectionId;
@@ -30,6 +32,42 @@ namespace DrawChatApp.Hubs
             await Groups.RemoveFromGroupAsync(Context.ConnectionId, groupName);
         }
 
+        #region ROOM SETTINGS
+        public async Task GetRoomSettings(string roomId)
+        {
+            // Get Room Settings using Room Id
+            var settings = await _settingsService.GetRoomSettingsAsync(roomId);
+
+            if (settings != null)
+            {
+                await Clients.Groups(roomId).SendAsync("GetRoomSettings", roomId, settings);
+            }
+        }
+
+        public async Task CreateRoomSettings(string roomId, RoomSettings newSettings)
+        {
+            // Update Room Settings using Room Id
+            var settings = await _settingsService.CreateRoomSettingsAsync(roomId, newSettings);
+
+            if (settings != null)
+            {
+                await Clients.Groups(roomId).SendAsync("GetRoomSettings ", roomId, settings);
+            }
+        }
+
+        public async Task UpdateRoomSettings(string roomId, RoomSettings updatedSettings)
+        {
+            // Update Room Settings using Room Id
+            var settings = await _settingsService.UpdateRoomSettingsAsync(roomId, updatedSettings);
+
+            if (settings != null)
+            {
+                await Clients.Groups(roomId).SendAsync("GetRoomSettings ", roomId, settings);
+            }
+        }
+        #endregion
+
+        #region PLAYERS
         // Update Player in existing Player List
         public async Task UpdatePlayer(string roomId, Player updatedPlayer)
         {
@@ -78,5 +116,12 @@ namespace DrawChatApp.Hubs
                 await Clients.Groups(roomId).SendAsync("GetPlayers", roomId, playersList);
             }
         }
+
+        public async Task RemovePlayer(string roomId, Player currentPlayer)
+        {
+            await _playersService.RemovePlayerAsync(roomId, currentPlayer.PlayerId);
+        }
+        #endregion
+     
     }
 }
