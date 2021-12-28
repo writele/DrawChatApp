@@ -18,6 +18,10 @@ namespace DrawChatApp.Pages
         public string RoomId { get; set; }
         [Parameter]
         public string userName { get; set; } = "";
+        [Inject]
+        public IPlayersService PlayersService { get; set; } = null!;
+        [Inject]
+        public IRoomSettingsService SettingsService { get; set; } = null!;
 
         public string ConnectionId { get; set; }
         public Player CurrentPlayer { get; set; }
@@ -28,7 +32,7 @@ namespace DrawChatApp.Pages
         //public Word ActiveWord { get; set; }       
         //public Player Winner { get; set; }
         //public int ActiveRound { get; set; }
-        //public bool IsActiveGame;
+        public bool IsActiveGame = false;
         //public bool IsActiveRound;
 
         private HubConnection hubConnection;
@@ -47,9 +51,12 @@ namespace DrawChatApp.Pages
             // Add player
             //await AddPlayer();
             // Get Model -- pull from db
-            await hubConnection.InvokeAsync<RoomSettings>("GetRoomSettings", RoomId);
-            // Load current players
-            await hubConnection.InvokeAsync("CreateOrGetPlayersList", RoomId);
+            //await hubConnection.InvokeAsync<RoomSettings>("GetRoomSettings", RoomId);
+            //// Load current players
+            //await hubConnection.InvokeAsync("CreateOrGetPlayersList", RoomId);
+            await GetData();
+            //StateHasChanged();
+            //await RefreshRoom();
         }
 
         protected async Task InitializeGameHub()
@@ -64,41 +71,92 @@ namespace DrawChatApp.Pages
                 if (Players.Count > 0)
                     CurrentPlayer = playersList.Where(x => x.Name == userName && x.ConnectionId == hubConnection.ConnectionId)
                     .FirstOrDefault();
-                StateHasChanged();
+                //StateHasChanged();
             });
 
             hubConnection.On<string, RoomSettings>("GetRoomSettings", (roomId, settings) =>
             {
                 Model = settings;
+                IsActiveGame = Model.IsActiveGame;
+                //StateHasChanged();
+            });
+
+            hubConnection.On<string>("OnRefresh", async (roomId) =>
+            {
+                await GetData();
                 StateHasChanged();
             });
 
+            //hubConnection.On<string>("OnNothing", /*async*/ (roomId) =>
+            //{
+                
+            //});
+
             await hubConnection.StartAsync();
+        }
+
+        protected async Task GetData()
+        {
+            // Load current players
+            await hubConnection.InvokeAsync("CreateOrGetPlayersList", RoomId);
+            // Get Model -- pull from db
+            await hubConnection.InvokeAsync("GetRoomSettings", RoomId);
+            //StateHasChanged();
         }
         #endregion
         #region GAME
-        private async Task UpdateRoomSettings()
+        private async Task RefreshRoom()
         {
-            await hubConnection.InvokeAsync<RoomSettings>("UpdateRoomSettings", RoomId, Model);
+            await hubConnection.InvokeAsync("Refresh", RoomId);
         }
-        private async Task UpdatePlayersList()
+        private async Task<bool> UpdateRoomSettings(/*RoomSettings model*/)
         {
-            await hubConnection.SendAsync("UpdatePlayersList", RoomId, Players);
+            //await hubConnection.SendAsync("UpdateRoomSettings", RoomId, Model);
+            var result = await SettingsService.UpdateRoomSettingsAsync(RoomId, Model);
+
+            if (result != null)
+                return true;
+
+            return false;
         }
-        private async Task AddPlayer()
+
+        private async Task<bool> UpdateCurrentPlayer()
         {
-            var newPlayer = new Player();
-            newPlayer.Name = userName;
-            newPlayer.RoomId = RoomId;
-            newPlayer.ConnectionId = hubConnection.ConnectionId;
+            //await hubConnection.SendAsync("UpdateRoomSettings", RoomId, Model);
+            var result = await PlayersService.AddOrUpdatePlayerAsync(RoomId, CurrentPlayer);
+
+            if (result != null)
+                return true;
+
+            return false;
+        }
+
+        private async Task<bool> UpdatePlayersList(/*List<Player> playersList*/)
+        {
+            foreach (var player in Players)
+            {
+                await PlayersService.AddOrUpdatePlayerAsync(RoomId, player);
+            }
+
+            return true;
+        }
+        private async Task<bool> AddPlayer()
+        {
+            CurrentPlayer = new Player();
+            CurrentPlayer.Name = userName;
+            CurrentPlayer.RoomId = RoomId;
+            CurrentPlayer.ConnectionId = hubConnection.ConnectionId;
             // Add player via GameHub
-            await hubConnection.SendAsync("UpdatePlayer", RoomId, newPlayer);
+            //await hubConnection.SendAsync("UpdatePlayer", RoomId, CurrentPlayer);
+            return await UpdateCurrentPlayer();
         }
         private async Task UpdatePlayer()
         {
+            bool result = false;
+
             if (CurrentPlayer == null || string.IsNullOrEmpty(CurrentPlayer.Name))
             {
-                await AddPlayer();
+                result = await AddPlayer();
             }
             else
             {
@@ -106,8 +164,12 @@ namespace DrawChatApp.Pages
                 CurrentPlayer.RoomId = RoomId;
                 CurrentPlayer.ConnectionId = hubConnection.ConnectionId;
                 // Update player via GameHub
-                await hubConnection.SendAsync("UpdatePlayer", RoomId, CurrentPlayer);
+                //await hubConnection.SendAsync("UpdatePlayer", RoomId, CurrentPlayer);
+                result = await UpdateCurrentPlayer();
             }
+
+            if (result)
+                await RefreshRoom();
         }
         private async Task StartGame()
         {
@@ -116,8 +178,8 @@ namespace DrawChatApp.Pages
             //List<Player> updatedPlayers = new List<Player>(Players);
             Players.ForEach(x => x.Points = 0);
             Players.FirstOrDefault().IsArtist = true;
-            await UpdatePlayersList();
-
+            
+            //RoomSettings updatedModel = (RoomSettings)Model.Clone();
             // Set Active word
             var index = new Random().Next(Model.Words.Count);
             Model.ActiveWord = Model.Words[index];
@@ -125,8 +187,13 @@ namespace DrawChatApp.Pages
             // set game to active
             Model.IsActiveGame = true;
 
-            await UpdateRoomSettings();
-            StateHasChanged();
+            var playerSuccess = await UpdatePlayersList();
+            var roomSuccess = await UpdateRoomSettings();
+
+            //await GetData();
+            //StateHasChanged();
+            if (playerSuccess && roomSuccess)
+                await RefreshRoom();
         }
         private void StartRound()
         {
@@ -171,8 +238,8 @@ namespace DrawChatApp.Pages
 
         public async ValueTask DisposeAsync()
         {
-            await hubConnection.InvokeAsync<string>("RemoveFromGroup", RoomId);
             await hubConnection.InvokeAsync("RemovePlayer", RoomId, CurrentPlayer);
+            await hubConnection.InvokeAsync<string>("RemoveFromGroup", RoomId);           
         }
     }
 }

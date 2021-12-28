@@ -7,7 +7,7 @@ using System.Threading.Tasks;
 
 namespace DrawChatApp.Data
 {
-    public class RoomSettings 
+    public class RoomSettings : ICloneable
     {
         [BsonId]
         [BsonRepresentation(BsonType.ObjectId)]
@@ -28,5 +28,10 @@ namespace DrawChatApp.Data
         public int ActiveRound { get; set; }
         public bool IsActiveGame;
         public bool IsActiveRound;
+
+        public object Clone()
+        {
+            return MemberwiseClone();
+        }
     }
 }
