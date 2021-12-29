@@ -27,7 +27,7 @@
     }
     else
     {
-        @if (CurrentPlayer.IsArtist == true)
+        @if (CurrentPlayer.IsArtist == true || CurrentPlayer.IsDone)
         {
             <p>Your Word is '@Model.ActiveWord.Name'</p>
         }
@@ -36,16 +36,23 @@
             <p>@(Regex.Replace(Model.ActiveWord.Name, "[A-Za-z ]", " _ "))</p>
         }
 
-        <GameWhiteboard IsDisabled="@(!CurrentPlayer.IsArtist)"></GameWhiteboard>
+        <div class="row">
 
-        <GameChat userName="@userName"></GameChat>
+            <div class="col-md-6">
+            <GameWhiteboard IsDisabled="@(!CurrentPlayer.IsArtist)"></GameWhiteboard>
+            </div>
+
+            <div class="col-md-6">
+            <GameChat UserName="@userName" CorrectWord="@Model.ActiveWord" OnCorrectGuess="OnCorrectGuess"></GameChat>
+            </div>
+        </div>
     }
 
     <p>Current players:</p>
     <ul>
     @foreach (var p in Players)
     {
-        <li>@p.Name</li>
+        <li>@p.Name (@p.Points Points)</li>
     }
     </ul>
 }

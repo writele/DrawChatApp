@@ -21,25 +21,22 @@ namespace DrawChatApp.Pages
         [Inject] private IRoomSettingsService Service { get; set; } = null!;
 
         private string roomNameInput;
+        private bool IsNewGameEnabled => !string.IsNullOrEmpty(roomNameInput);
 
         public RoomSettings RoomSettings { get; set; } = new RoomSettings();
 
-        //private HubConnection hubConnection;
-        //public bool IsConnected =>
-        //    hubConnection.State == HubConnectionState.Connected;
-
         protected override async Task OnInitializedAsync()
         {
-            //hubConnection = new HubConnectionBuilder()
-            //    .WithUrl(NavigationManager.ToAbsoluteUri("/gamehub"))
-            //    .Build();
 
-
-            //await hubConnection.StartAsync();
         }
 
         public async Task CreateGame()
         {
+            if (!IsNewGameEnabled)
+            {
+                return;
+            }
+
             // Generate Room Id
             int randomId = new Random().Next(100,999);
             string roomId = $"{roomNameInput.Replace(' ', '-')}-{randomId}";
@@ -50,7 +47,6 @@ namespace DrawChatApp.Pages
             RoomSettings.MaxRounds = 1;
             RoomSettings.MaxTime = 30000;
             RoomSettings.IsActiveGame = false;
-            //RoomSettings.PlayerHostName = userNameInput;
             RoomSettings.AllowedCategories = new List<WordCategory> { WordCategory.Thing, WordCategory.Character, WordCategory.Activity };
 
             // Get Words -- pull from json file
@@ -62,12 +58,6 @@ namespace DrawChatApp.Pages
             // Navigate to Room
             NavManager.NavigateTo($"/Room/{roomId}");
         }
-
-        public bool IsNewGameEnabled()
-        {
-            return !string.IsNullOrEmpty(roomNameInput);
-        }
-
 
         public async ValueTask DisposeAsync()
         {           
