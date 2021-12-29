@@ -34,7 +34,10 @@ namespace DrawChatApp.Hubs
 
         public async Task Refresh(string roomId)
         {
-            await Clients.Groups(roomId).SendAsync("OnRefresh", roomId);
+
+            //await Clients.Groups(roomId).SendAsync("OnRefresh", roomId);
+            await GetRoomSettings(roomId);
+            await CreateOrGetPlayersList(roomId);
         }
 
         #region ROOM SETTINGS

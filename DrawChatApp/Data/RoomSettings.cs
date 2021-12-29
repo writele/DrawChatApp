@@ -26,8 +26,8 @@ namespace DrawChatApp.Data
         public Word ActiveWord { get; set; }
         public Player Winner { get; set; }
         public int ActiveRound { get; set; }
-        public bool IsActiveGame;
-        public bool IsActiveRound;
+        public bool IsActiveGame { get; set; }
+        public bool IsActiveRound { get; set; }
 
         public object Clone()
         {

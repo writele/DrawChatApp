@@ -24,7 +24,7 @@ namespace DrawChatApp.Pages
         public IRoomSettingsService SettingsService { get; set; } = null!;
 
         public string ConnectionId { get; set; }
-        public Player CurrentPlayer { get; set; }
+        public Player CurrentPlayer { get; set; } = new Player();
         public RoomSettings Model { get; set; }
 
         public List<Player> Players { get; set; } = new List<Player>();
@@ -70,15 +70,15 @@ namespace DrawChatApp.Pages
                 Players = playersList;
                 if (Players.Count > 0)
                     CurrentPlayer = playersList.Where(x => x.Name == userName && x.ConnectionId == hubConnection.ConnectionId)
-                    .FirstOrDefault();
-                //StateHasChanged();
+                    .FirstOrDefault() ?? new Player();
+                StateHasChanged();
             });
 
             hubConnection.On<string, RoomSettings>("GetRoomSettings", (roomId, settings) =>
             {
                 Model = settings;
                 IsActiveGame = Model.IsActiveGame;
-                //StateHasChanged();
+                StateHasChanged();
             });
 
             hubConnection.On<string>("OnRefresh", async (roomId) =>
@@ -142,7 +142,7 @@ namespace DrawChatApp.Pages
         }
         private async Task<bool> AddPlayer()
         {
-            CurrentPlayer = new Player();
+            //CurrentPlayer = new Player();
             CurrentPlayer.Name = userName;
             CurrentPlayer.RoomId = RoomId;
             CurrentPlayer.ConnectionId = hubConnection.ConnectionId;
